@@ -1,0 +1,9 @@
+.git
+__pycache__/
+*.bin
+*.asc
+*.json
+*.log
+*.vcd
+*.out
+*.o
