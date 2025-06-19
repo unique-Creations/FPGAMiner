@@ -1,3 +1,7 @@
+SRC_DIR=src
+CONSTRAINTS_DIR=constraints
+BUILD_DIR=build
+
 # File names
 TOP=top
 PCF=constraints.pcf
@@ -9,21 +13,24 @@ ICEPACK=icepack
 LOADER=alchitry-loader
 
 # Targets
-all: ${TOP}.bin
+all: $(BUILD_DIR)/$(TOP).bin
 
-${TOP}.json: ${TOP}.v
-	${YOSYS} -p "synth_ice40 -top ${TOP} -json ${TOP}.json" ${TOP}.v
+$(BUILD_DIR)/$(TOP).json: $(SRC_DIR)/$(TOP).v | $(BUILD_DIR)
+	$(YOSYS) -p "synth_ice40 -top $(TOP) -json $@" $<
 
-${TOP}.asc: ${TOP}.json ${PCF}
-	${NEXTPNR} --hx8k --json ${TOP}.json --asc ${TOP}.asc --pcf ${PCF}
+$(BUILD_DIR)/$(TOP).asc: $(BUILD_DIR)/$(TOP).json $(PCF)
+	$(NEXTPNR) --hx8k --json $< --asc $@ --pcf $(PCF)
 
-${TOP}.bin: ${TOP}.asc
-	${ICEPACK} ${TOP}.asc ${TOP}.bin
+$(BUILD_DIR)/$(TOP).bin: $(BUILD_DIR)/$(TOP).asc
+	$(ICEPACK) $< $@
 
-upload: ${TOP}.bin
-	${LOADER} -b Cu -f ${TOP}.bin
+upload: $(BUILD_DIR)/$(TOP).bin
+	$(LOADER) -b Cu -f $<
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -f *.json *.asc *.bin
+	rm -rf $(BUILD_DIR)
 
 .PHONY: all upload clean
